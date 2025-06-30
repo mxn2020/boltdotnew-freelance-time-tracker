@@ -13,6 +13,8 @@ import { TrackerPage } from './pages/TrackerPage'
 import { ProjectsPage } from './pages/ProjectsPage'
 import { ClientsPage } from './pages/ClientsPage'
 import { ReportsPage } from './pages/ReportsPage'
+import { InvoicesPage } from './pages/InvoicesPage'
+import { ExpensesPage } from './pages/ExpensesPage'
 
 function App() {
   return (
@@ -69,10 +71,7 @@ function App() {
             <Route path="/invoices" element={
               <ProtectedRoute>
                 <Layout>
-                  <div className="text-center py-12">
-                    <h2 className="text-2xl font-bold text-gray-900 mb-4">Invoices</h2>
-                    <p className="text-gray-600">Coming in Step 4!</p>
-                  </div>
+                  <InvoicesPage />
                 </Layout>
               </ProtectedRoute>
             } />
@@ -91,10 +90,7 @@ function App() {
             <Route path="/expenses" element={
               <ProtectedRoute>
                 <Layout>
-                  <div className="text-center py-12">
-                    <h2 className="text-2xl font-bold text-gray-900 mb-4">Expenses</h2>
-                    <p className="text-gray-600">Coming in Step 4!</p>
-                  </div>
+                  <ExpensesPage />
                 </Layout>
               </ProtectedRoute>
             } />
