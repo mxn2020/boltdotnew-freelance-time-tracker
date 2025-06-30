@@ -1,6 +1,6 @@
 // src/contexts/AuthContext.tsx
 
-import React, { createContext, useContext, useEffect, useState } from 'react'
+import React, { createContext, useContext, useEffect, useState, useRef } from 'react'
 import { User as SupabaseUser } from '@supabase/supabase-js'
 import { supabase } from '../lib/supabase'
 import { User, AuthState, LoginCredentials, RegisterCredentials } from '../types/auth'
@@ -29,20 +29,63 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     loading: true,
     error: null
   })
+  
+  // Track if we're in the middle of a logout to prevent race conditions
+  const isLoggingOut = useRef(false)
+  const mounted = useRef(true)
 
   useEffect(() => {
-    // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session?.user) {
-        fetchUserProfile(session.user)
-      } else {
-        setState(prev => ({ ...prev, loading: false }))
+    mounted.current = true
+    
+    // Initialize auth state
+    const initializeAuth = async () => {
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession()
+        
+        if (!mounted.current) return
+        
+        if (error) {
+          console.error('Error getting session:', error)
+          setState({ user: null, loading: false, error: 'Failed to load session' })
+          return
+        }
+
+        if (session?.user) {
+          await fetchUserProfile(session.user)
+        } else {
+          setState(prev => ({ ...prev, loading: false }))
+        }
+      } catch (error) {
+        console.error('Error initializing auth:', error)
+        if (mounted.current) {
+          setState({ user: null, loading: false, error: 'Failed to initialize authentication' })
+        }
       }
-    })
+    }
+
+    initializeAuth()
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
+        if (!mounted.current) return
+
+        console.log('Auth state change:', event, session?.user?.id)
+
+        // Handle explicit logout
+        if (event === 'SIGNED_OUT') {
+          if (!isLoggingOut.current) {
+            // This was an external logout (e.g., from another tab)
+            setState({ user: null, loading: false, error: null })
+          }
+          return
+        }
+
+        // Don't process auth changes if we're in the middle of logging out
+        if (isLoggingOut.current) {
+          return
+        }
+
         if (session?.user) {
           await fetchUserProfile(session.user)
         } else {
@@ -51,7 +94,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
     )
 
-    return () => subscription.unsubscribe()
+    return () => {
+      mounted.current = false
+      subscription.unsubscribe()
+    }
   }, [])
 
   const fetchUserProfile = async (authUser: SupabaseUser) => {
@@ -64,18 +110,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       if (error) throw error
 
-      setState({
-        user: data,
-        loading: false,
-        error: null
-      })
+      if (mounted.current) {
+        setState({
+          user: data,
+          loading: false,
+          error: null
+        })
+      }
     } catch (error) {
       console.error('Error fetching user profile:', error)
-      setState({
-        user: null,
-        loading: false,
-        error: 'Failed to load user profile'
-      })
+      if (mounted.current) {
+        setState({
+          user: null,
+          loading: false,
+          error: 'Failed to load user profile'
+        })
+      }
     }
   }
 
@@ -137,14 +187,30 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const logout = async () => {
     try {
-      const { error } = await supabase.auth.signOut()
-      if (error) throw error
+      // Set the logout flag to prevent race conditions
+      isLoggingOut.current = true
       
+      // Clear state immediately
       setState({ user: null, loading: false, error: null })
+      
+      // Sign out from Supabase
+      const { error } = await supabase.auth.signOut()
+      
+      if (error) {
+        console.error('Supabase logout error:', error)
+        // Even if Supabase logout fails, we've cleared local state
+      }
+      
       toast.success('Successfully logged out!')
     } catch (error: any) {
+      console.error('Logout error:', error)
       toast.error('Logout failed')
       throw error
+    } finally {
+      // Reset the logout flag after a short delay to allow auth state to settle
+      setTimeout(() => {
+        isLoggingOut.current = false
+      }, 100)
     }
   }
 
