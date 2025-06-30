@@ -1,3 +1,5 @@
+//src/utils/timeUtils.ts
+
 export const formatDuration = (seconds: number): string => {
   if (seconds < 0) return '0:00:00'
   

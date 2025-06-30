@@ -1,3 +1,5 @@
+// src/components/ui/Input.tsx
+
 import React from 'react'
 import { DivideIcon as LucideIcon } from 'lucide-react'
 

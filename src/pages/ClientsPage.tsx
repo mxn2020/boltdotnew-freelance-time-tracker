@@ -1,3 +1,4 @@
+//src/pages/ClientsPage.tsx
 import React, { useState } from 'react'
 import { useClients } from '../hooks/useClients'
 import { ClientForm } from '../components/clients/ClientForm'

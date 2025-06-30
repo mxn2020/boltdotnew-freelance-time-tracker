@@ -1,3 +1,5 @@
+//src/types/projects.ts
+
 export interface Client {
   id: string
   user_id: string

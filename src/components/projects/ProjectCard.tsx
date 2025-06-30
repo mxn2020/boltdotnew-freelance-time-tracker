@@ -1,3 +1,4 @@
+//src/components/projects/ProjectCard.tsx
 import React from 'react'
 import { Project } from '../../types/projects'
 import { Card } from '../ui/Card'

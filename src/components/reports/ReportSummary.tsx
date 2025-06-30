@@ -1,3 +1,4 @@
+//src/components/reports/ReportSummary.tsx
 import React from 'react'
 import { Card, CardHeader, CardTitle } from '../ui/Card'
 import { Clock, DollarSign, BarChart3, TrendingUp } from 'lucide-react'

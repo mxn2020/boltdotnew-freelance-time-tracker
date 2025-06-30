@@ -1,3 +1,4 @@
+//src/pages/DashboardPage.tsx
 import React from 'react'
 import { useTimer } from '../contexts/TimerContext'
 import { useProjects } from '../hooks/useProjects'

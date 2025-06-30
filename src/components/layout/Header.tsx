@@ -1,3 +1,4 @@
+//src/components/layout/Header.tsx
 import React from 'react'
 import { useAuth } from '../../contexts/AuthContext'
 import { Button } from '../ui/Button'

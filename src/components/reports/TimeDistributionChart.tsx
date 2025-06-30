@@ -1,3 +1,4 @@
+//src/components/reports/TimeDistributionChart.tsx
 import React from 'react'
 import { Card, CardHeader, CardTitle } from '../ui/Card'
 import { TimeEntry } from '../../types/projects'
