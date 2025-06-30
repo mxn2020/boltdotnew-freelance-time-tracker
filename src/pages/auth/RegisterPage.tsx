@@ -1,4 +1,4 @@
-//src/pages/auth/RegisterPage.tsx
+// Updated RegisterPage.tsx with proper form validation
 import React from 'react'
 import { Link, Navigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
@@ -13,7 +13,7 @@ import { Mail, Lock, User, Building, Clock, DollarSign } from 'lucide-react'
 const registerSchema = z.object({
   email: z.string().email('Please enter a valid email address'),
   password: z.string().min(6, 'Password must be at least 6 characters'),
-  confirmPassword: z.string(),
+  confirmPassword: z.string().min(1, 'Please confirm your password'),
   full_name: z.string().min(2, 'Full name must be at least 2 characters'),
   business_name: z.string().optional(),
   timezone: z.string().min(1, 'Please select your timezone'),
@@ -34,7 +34,14 @@ export const RegisterPage: React.FC = () => {
     formState: { errors, isSubmitting }
   } = useForm<RegisterFormData>({
     resolver: zodResolver(registerSchema),
+    mode: 'onSubmit', // Only validate on submit
+    reValidateMode: 'onChange', // Re-validate on change after first submit
     defaultValues: {
+      email: '',
+      password: '',
+      confirmPassword: '',
+      full_name: '',
+      business_name: '',
       timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
       hourly_rate: 50
     }
@@ -123,9 +130,12 @@ export const RegisterPage: React.FC = () => {
                   Timezone
                 </label>
                 <select
-                  className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  className={`block w-full px-3 py-2 border ${
+                    errors.timezone ? 'border-red-500' : 'border-gray-300'
+                  } rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500`}
                   {...register('timezone')}
                 >
+                  <option value="">Select timezone</option>
                   <option value="America/New_York">Eastern Time</option>
                   <option value="America/Chicago">Central Time</option>
                   <option value="America/Denver">Mountain Time</option>
